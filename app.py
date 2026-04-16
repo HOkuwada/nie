@@ -368,7 +368,7 @@ with col2:
         st.plotly_chart(fig_radar, use_container_width=True)
     else:
         st.info("サイドバーから大学を選択してください。")
-
+        
 # --- 4. 詳細情報セクション ---
 st.markdown("---")
 st.subheader("選択した大学の詳細情報")
