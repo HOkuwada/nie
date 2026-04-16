@@ -6,7 +6,6 @@ import urllib.parse
 import streamlit.components.v1 as components
 
 # --- 1. データセットの定義 ---
-# 学部学科名，入試形式，科目数を追加
 data = [
     {
         "大学名": "京都大学",
@@ -185,59 +184,115 @@ data = [
     },
 ]
 
-# 欠損値補完
+# 欠損値補完および四軸チャート用のスコア計算
 for d in data:
     if "年間学費(万円)" not in d:
         d["年間学費(万円)"] = 54
+    # 横軸：教育(プラス) vs 臨床(マイナス)
+    d["X_Score"] = d["教育"] - d["臨床"]
+    # 縦軸：研究(プラス) vs 資格実学(マイナス)
+    d["Y_Score"] = d["研究"] - d["資格実学"]
 
 df = pd.DataFrame(data)
 categories = ['研究', '臨床', '教育', 'データ統計', '資格実学']
 
 # --- 2. Streamlit UI構築 ---
-st.set_page_config(page_title="関西圏 心理系大学比較", layout="wide")
-st.title("関西圏の心理学系大学 比較")
+st.set_page_config(page_title="関西圏 心理学大学セレクター", layout="wide")
+st.title("関西圏 心理学系大学 比較ダッシュボード")
 
 # サイドバー
-# 1. まず設立区分を選択させる
+st.sidebar.header("絞り込み条件")
 selected_type = st.sidebar.multiselect("設立区分", ["国立", "公立", "私立"], default=["公立", "私立"])
-# 2. 設立区分でデータフレームを先にフィルタリングする
 filtered_df = df[df["区分"].isin(selected_type)]
-# 3. フィルタリングされたデータフレームに存在する大学名だけをリスト化する
 available_univs = filtered_df["大学名"].tolist()
-# 4. デフォルトで選択させたい大学が、現在選べるリストに存在するかチェックして安全に設定
+
 ideal_defaults = ["京都女子大学", "立命館大学", "関西学院大学", "奈良女子大学"]
 valid_defaults = [u for u in ideal_defaults if u in available_univs]
-# 5. 大学選択のマルチセレクトを生成
 selected_univs = st.sidebar.multiselect("比較する大学を選択", available_univs, default=valid_defaults)
 
-# --- 3. グラフ描画セクション ---
+# --- 3. グラフ描画セクション（レイアウト見直し） ---
+
+# 1つ目：学費 vs 科研費規模（スマホで見やすいように単独で全幅表示）
+st.markdown("---")
+st.subheader("学費 vs 研究力（科研費規模）")
+st.markdown("ざっくりいうと，大学の「費用対効果」がわかります。")
+st.info("""
+科研費（科学研究費助成事業）: 国から配分される研究資金。
+特別推進・基盤S/A: 2千万〜数億円（大型設備・世界レベル）
+基盤B: 500万〜2000万円（本格的な実験・調査）
+基盤C: 500万円以下（地道な臨床・データ分析）
+
+※心理学（特に臨床系）は高額な機械を使わないため，基盤Cが多くなる傾向があります。
+""")
+
+# グラフのデザインを大幅に改善
+fig_scatter = px.scatter(
+    filtered_df, x="年間学費(万円)", y="科研費規模", color="区分", text="大学名",
+    hover_data=["科研費の質"],
+    color_discrete_sequence=px.colors.qualitative.Pastel
+)
+
+fig_scatter.update_traces(
+    textposition='top center',
+    marker=dict(size=16, line=dict(width=1.5, color='DarkSlateGrey')), # マーカーを大きく、縁取りを追加
+    textfont=dict(size=13, color='black') # 文字を黒く、少し大きく
+)
+
+fig_scatter.update_layout(
+    height=450,
+    plot_bgcolor='rgba(245, 245, 245, 1)', # 背景を少しグレーにして視認性を上げる
+    xaxis=dict(title="年間学費（万円）", title_font=dict(size=14, weight="bold"), gridcolor='white', linecolor='black'),
+    yaxis=dict(title="科研費規模（相対値）", title_font=dict(size=14, weight="bold"), gridcolor='white', linecolor='black'),
+    margin=dict(l=40, r=40, t=40, b=40)
+)
+st.plotly_chart(fig_scatter, use_container_width=True)
+
+
+# 2つ目と3つ目：四軸チャートとレーダーチャート（横並び）
+st.markdown("---")
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("学費 vs 科研費規模")
-    st.markdown("ざっくりいうと，大学の「費用対効果」がわかります。")
-    st.info("""
-    科研費（科学研究費助成事業）: 国から配分される研究資金。
-    特別推進・基盤S/A: 2千万〜数億円（大型設備・世界レベル）
-    基盤B: 500万〜2000万円（本格的な実験・調査）
-    基盤C: 500万円以下（地道な臨床・データ分析）
+    st.subheader("大学の学風（スタンス）マップ")
+    st.markdown("各大学の注力分野が**「研究か実学か」「教育か臨床か」**で分かれます。")
     
-    ※心理学（特に臨床系）は高額な機械を使わないため，基盤Cが多くなる傾向があります。
-    """)
-    fig_scatter = px.scatter(
-        filtered_df, x="年間学費(万円)", y="科研費規模", color="区分", text="大学名",
-        size_max=60, hover_data=["科研費の質"]
+    # 選択された大学のみのデータフレームを作成
+    if selected_univs:
+        focus_df = df[df["大学名"].isin(selected_univs)]
+    else:
+        focus_df = pd.DataFrame(columns=df.columns) # 空のDF
+
+    fig_quad = px.scatter(
+        focus_df, x="X_Score", y="Y_Score", color="大学名", text="大学名",
+        color_discrete_sequence=px.colors.qualitative.Safe
     )
-    fig_scatter.update_traces(textposition='top center')
-    fig_scatter.update_layout(height=400)
-    st.plotly_chart(fig_scatter, use_container_width=True)
+    
+    fig_quad.update_traces(
+        textposition='top center',
+        marker=dict(size=14, opacity=0.8, line=dict(width=1, color='DarkSlateGrey')),
+        textfont=dict(size=12, color='black')
+    )
+
+    # 十字の基準線（ゼロライン）を追加
+    fig_quad.add_hline(y=0, line_width=2, line_color="black", opacity=0.3)
+    fig_quad.add_vline(x=0, line_width=2, line_color="black", opacity=0.3)
+
+    # 軸の設定と固定（四つの象限が常に正しく表示されるように）
+    fig_quad.update_layout(
+        height=450,
+        showlegend=False,
+        plot_bgcolor='rgba(250, 250, 250, 1)',
+        xaxis=dict(title="← 臨床現場重視　｜　教育・学校重視 →", range=[-2.5, 2.5], zeroline=False, gridcolor='white'),
+        yaxis=dict(title="↓ 資格・実学重視　｜　研究重視 ↑", range=[-2.5, 2.5], zeroline=False, gridcolor='white'),
+        margin=dict(l=40, r=40, t=20, b=40)
+    )
+    st.plotly_chart(fig_quad, use_container_width=True)
 
 with col2:
     st.subheader("分野別レーダーチャート")
+    st.markdown("具体的な5つの指標のバランスを確認できます。")
     if selected_univs:
         fig_radar = go.Figure()
-        
-        # 複数重なっても見やすいように、PlotlyのSafeカラーパレットを利用
         colors = px.colors.qualitative.Safe
         
         for i, univ in enumerate(selected_univs):
@@ -247,17 +302,19 @@ with col2:
                 theta=categories, 
                 fill='toself', 
                 name=univ,
-                opacity=0.5, # 重なりを透過させて見やすくする
+                opacity=0.4,
                 line=dict(width=2)
             ))
             
         fig_radar.update_layout(
-            polar=dict(radialaxis=dict(visible=True, range=[0, 5])), 
-            height=400,
-            colorway=colors, # 色被りを防ぐ配色
-            margin=dict(l=40, r=40, t=40, b=40)
+            polar=dict(radialaxis=dict(visible=True, range=[0, 5], gridcolor='lightgrey')), 
+            height=450,
+            colorway=colors,
+            margin=dict(l=40, r=40, t=20, b=40)
         )
         st.plotly_chart(fig_radar, use_container_width=True)
+    else:
+        st.info("サイドバーから大学を選択してください。")
 
 # --- 4. 詳細情報セクション ---
 st.markdown("---")
