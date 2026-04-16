@@ -337,7 +337,7 @@ with col1:
     st.plotly_chart(fig_quad, use_container_width=True)
 
 with col2:
-st.subheader("分野別レーダーチャート")
+    st.subheader("分野別レーダーチャート")
     st.markdown("具体的な5つの指標のバランスを確認できます。")
     if selected_univs:
         fig_radar = go.Figure()
