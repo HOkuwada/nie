@@ -6,6 +6,8 @@ import urllib.parse
 import streamlit.components.v1 as components
 
 # --- 1. データセットの定義 ---
+# 「募集要項URL」を単一の文字列から、入試方式ごとの辞書（dict）に変更しました。
+# 後ほど、奥和田さんが実際のリサーチ結果に合わせてURL部分を書き換えてください。
 data = [
     {
         "大学名": "京都大学",
@@ -18,7 +20,11 @@ data = [
         "研究": 5, "臨床": 5, "教育": 4, "データ統計": 5, "資格実学": 3,
         "入試形式": "一般選抜（前期），特色入試（AO）",
         "科目数": "共通テスト: 5教科7科目 / 二次試験: 3〜4科目",
-        "入試対策": "共通テストは9割近くが必要。二次試験は記述量が非常に多く，深い思考力と論述力が求められる。特色の場合においても共通テストは必須であり，文学部では84％，教育学部では80％を超えなければ足きりとなる。総人は宇宙人が行くところ。"
+        "入試対策": "共通テストは9割近くが必要。二次試験は記述量が非常に多く，深い思考力と論述力が求められる。特色の場合においても共通テストは必須であり，文学部では84％，教育学部では80％を超えなければ足きりとなる。総人は宇宙人が行くところ。",
+        "募集要項": {
+            "一般選抜": "https://www.kyoto-u.ac.jp/ja/admissions/undergrad/requirements",
+            "特色入試": "https://www.kyoto-u.ac.jp/ja/admissions/tokusyoku/student-recruitment"
+        }
     },
     {
         "大学名": "大阪大学",
@@ -31,7 +37,11 @@ data = [
         "研究": 5, "臨床": 4, "教育": 4, "データ統計": 5, "資格実学": 3,
         "入試形式": "一般選抜（前期），総合型選抜",
         "科目数": "共通テスト: 5教科7科目 / 二次試験: 3科目",
-        "入試対策": "人間科学部は文理融合型。共通テストの配点も高いため，全教科で穴を作らないことが重要。総合型選抜においても共通テストは必須であり，75％以上取らなければ足きりとなる。"
+        "入試対策": "人間科学部は文理融合型。共通テストの配点も高いため，全教科で穴を作らないことが重要。総合型選抜においても共通テストは必須であり，75％以上取らなければ足きりとなる。",
+        "募集要項": {
+            "一般選抜": "https://www.osaka-u.ac.jp/ja/admissions/faculty/general/2026",
+            "総合型選抜": "https://www.nyusi.icho.osaka-u.ac.jp/requirement/human-sciences"
+        }
     },
     {
         "大学名": "奈良女子大学",
@@ -42,9 +52,13 @@ data = [
         "科研費規模": 85,
         "科研費の質": "A・B多数（国立女子大の最高峰）",
         "研究": 5, "臨床": 5, "教育": 4, "データ統計": 4, "資格実学": 4,
-        "入試形式": "一般選抜（前期・後期）",
+        "入試形式": "一般選抜（前期・後期），総合型選抜",
         "科目数": "共通テスト: 5教科6〜7科目 / 二次試験: 2科目",
-        "入試対策": "女子大No.2。大阪公立大ととんとんか少し下ぐらいなだけで，かなり難しい。"
+        "入試対策": "女子大No.2。大阪公立大ととんとんか少し下ぐらいなだけで，かなり難しい。",
+        "募集要項": {
+            "一般選抜": "https://www.nara-wu.ac.jp/nyusi/nyusi2_a.html",
+            "総合型選抜": "https://www.nara-wu.ac.jp/nyusi/qnyusi/download/index.html"
+        }
     },
     {
         "大学名": "和歌山大学",
@@ -57,7 +71,11 @@ data = [
         "研究": 3, "臨床": 3, "教育": 5, "データ統計": 3, "資格実学": 4,
         "入試形式": "一般選抜（前期），学校推薦型選抜",
         "科目数": "共通テスト: 5〜6教科 / 二次試験: 1〜2科目",
-        "入試対策": "教育学部に属するため，学校心理や発達心理に強い。国公立としては共通テストのボーダーが比較的狙いやすい。"
+        "入試対策": "教育学部に属するため，学校心理や発達心理に強い。国公立としては共通テストのボーダーが比較的狙いやすい。",
+        "募集要項": {
+            "一般選抜": "https://www.wakayama-u.ac.jp/admission/faculty/invitation/",
+            "学校推薦型選抜": "https://www.wakayama-u.ac.jp/admission/faculty/invitation/"
+        }
     },
     {
         "大学名": "大阪公立大学",
@@ -68,9 +86,13 @@ data = [
         "科研費規模": 75,
         "科研費の質": "A・B・Cバランス型",
         "研究": 4, "臨床": 4, "教育": 3, "データ統計": 4, "資格実学": 3,
-        "入試形式": "一般選抜（前期・中期），学校推薦",
+        "入試形式": "一般選抜（前期・中期），学校推薦型選抜",
         "科目数": "共通テスト: 5教科 / 二次試験: 1〜2科目",
-        "入試対策": "中期日程は倍率が非常に高くなる。学校推薦は評定平均が高いと有利に進められるが，共通テストの受験が必須。"
+        "入試対策": "中期日程は倍率が非常に高くなる。学校推薦は評定平均が高いと有利に進められるが，共通テストの受験が必須。",
+        "募集要項": {
+            "一般選抜": "https://www.omu.ac.jp/admissions/ug/exam_info/general/#boshuyoukou",
+            "学校推薦型選抜": "https://www.omu.ac.jp/admissions/ug/exam_info/special/recommend/"
+        }
     },
     {
         "大学名": "京都府立大学",
@@ -81,9 +103,13 @@ data = [
         "科研費規模": 40,
         "科研費の質": "B・C主体（地域密着・少人数）",
         "研究": 3, "臨床": 3, "教育": 3, "データ統計": 2, "資格実学": 3,
-        "入試形式": "一般選抜（前期・後期）",
+        "入試形式": "一般選抜（前期・後期），学校推薦型選抜",
         "科目数": "共通テスト: 5教科 / 二次試験: 2科目",
-        "入試対策": "少人数制のため合格枠が狭い。共通テストで確実に7割以上を確保し，英語・国語の記述力を磨くことが望ましい。"
+        "入試対策": "少人数制のため合格枠が狭い。共通テストで確実に7割以上を確保し，英語・国語の記述力を磨くことが望ましい。",
+        "募集要項": {
+            "一般選抜": "https://www.kpu.ac.jp/admissions/exam/guide/general/#0af2beaa",
+            "学校推薦型選抜": "https://www.kpu.ac.jp/admissions/exam/guide/recommendation/#0af2beaa"
+        }
     },
     {
         "大学名": "滋賀県立大学",
@@ -94,9 +120,13 @@ data = [
         "科研費規模": 45,
         "科研費の質": "B・C主体（地域密着・臨床）",
         "研究": 3, "臨床": 4, "教育": 3, "データ統計": 2, "資格実学": 4,
-        "入試形式": "一般選抜（前期・後期）",
+        "入試形式": "一般選抜（前期・後期），学校推薦型選抜",
         "科目数": "共通テスト: 5教科 / 二次試験: 2科目",
-        "入試対策": "公立で心理学が学べる貴重な枠。"
+        "入試対策": "公立で心理学が学べる貴重な枠。",
+        "募集要項": {
+            "一般選抜": "https://www.usp.ac.jp/nyushi/senbatsuyoukou/ippansenbatu/",
+            "学校推薦型選抜": "https://www.usp.ac.jp/nyushi/senbatsuyoukou/tokubetu/"
+        }
     },
     {
         "大学名": "立命館大学",
@@ -110,7 +140,11 @@ data = [
         "研究": 4, "臨床": 4, "教育": 4, "データ統計": 5, "資格実学": 4,
         "入試形式": "一般選抜，共通テスト利用，AO選抜，指定校推薦",
         "科目数": "一般: 3科目 / AO: 書類・面接・小論文",
-        "入試対策": "AO選抜は評定平均と活動実績が重視される。一般入試は英語の配点が高く，速読力が求められる。"
+        "入試対策": "AO選抜は評定平均と活動実績が重視される。一般入試は英語の配点が高く，速読力が求められる。",
+        "募集要項": {
+            "一般選抜・共テ利用": "https://admission-old.ritsumei.ac.jp/application/general/dl.html",
+            "AO選抜": "https://admission-old.ritsumei.ac.jp/application/ao/dl.html"
+        }
     },
     {
         "大学名": "同志社大学",
@@ -124,7 +158,10 @@ data = [
         "研究": 4, "臨床": 4, "教育": 3, "データ統計": 4, "資格実学": 5,
         "入試形式": "一般選抜，共通テスト利用，指定校推薦",
         "科目数": "一般: 3科目（英・国・選択）",
-        "入試対策": "英語の難易度が非常に高い。長文の語彙レベルでは京大英語とタメを張れる。"
+        "入試対策": "英語の難易度が非常に高い。長文の語彙レベルでは京大英語とタメを張れる。",
+        "募集要項": {
+            "一般選抜・共テ利用": "https://www.doshisha.ac.jp/admissions_undergrad/general_application/index.html"
+        }
     },
     {
         "大学名": "関西学院大学",
@@ -136,9 +173,13 @@ data = [
         "科研費規模": 80,
         "科研費の質": "A・B多数（実験心理学の伝統校）",
         "研究": 5, "臨床": 4, "教育": 4, "データ統計": 4, "資格実学": 4,
-        "入試形式": "一般選抜，共通テスト利用，AO入試，指定校推薦",
+        "入試形式": "一般選抜，共通テスト利用，学部特色入試，指定校推薦",
         "科目数": "一般: 3科目 / AO: 書類・面接・口頭試問",
-        "入試対策": "基礎研究を重視する校風。一般入試は標準的な問題が多いが，高得点勝負になりやすい。"
+        "入試対策": "基礎研究を重視する校風。一般入試は標準的な問題が多いが，高得点勝負になりやすい。",
+        "募集要項": {
+            "一般選抜・共テ利用": "https://www.kwansei.ac.jp/admissions/guideline/general.html#id-r17dr0q6",
+            "学部特色": "https://www.kwansei.ac.jp/admissions/guideline/faculty-specific.html"
+        }
     },
     {
         "大学名": "京都女子大学",
@@ -152,7 +193,12 @@ data = [
         "研究": 3, "臨床": 5, "教育": 5, "データ統計": 2, "資格実学": 5,
         "入試形式": "一般選抜，公募制推薦，総合型選抜，指定校推薦",
         "科目数": "一般: 2科目か3科目 / 公募: 2科目（英・国・数のうち2つ）",
-        "入試対策": "公募推薦は英語と現代文のみ。標準的な難易度のため，ミスをしない正確な解答力が求められる。"
+        "入試対策": "公募推薦は英語と現代文のみ。標準的な難易度のため，ミスをしない正確な解答力が求められる。",
+        "募集要項": {
+            "公募制推薦": "https://www.kyoto-wu.ac.jp/nyushi/daigaku/koubo/index.html",
+            "一般選抜": "https://www.kyoto-wu.ac.jp/nyushi/daigaku/ippan_zen/index.html",
+            "総合型選抜": "https://www.kyoto-wu.ac.jp/nyushi/daigaku/ao/index.html"
+        }
     },
     {
         "大学名": "同志社女子大学",
@@ -164,9 +210,14 @@ data = [
         "科研費規模": 40,
         "科研費の質": "C主体（教育・臨床実学重視）",
         "研究": 2, "臨床": 4, "教育": 4, "データ統計": 2, "資格実学": 4,
-        "入試形式": "一般選抜，公募制推薦，指定校推薦",
+        "入試形式": "一般選抜，公募制推薦，AO選抜，指定校推薦",
         "科目数": "一般: 2科目か3科目 / 公募: 2科目（英・国・数のうち2つ）",
-        "入試対策": "京女との併願が多い。標準レベルの問題を確実に正解する基礎力が合格の鍵。"
+        "入試対策": "京女との併願が多い。標準レベルの問題を確実に正解する基礎力が合格の鍵。",
+        "募集要項": {
+            "公募制推薦": "https://www.dwc.doshisha.ac.jp/dp/2026_recommendation_s/",
+            "一般選抜": "https://www.dwc.doshisha.ac.jp/dp/2026_recommendation_s/",
+            "AO選抜": "https://www.dwc.doshisha.ac.jp/dp/250618_2026_ao/s"
+        }
     },
     {
         "大学名": "龍谷大学",
@@ -180,7 +231,11 @@ data = [
         "研究": 3, "臨床": 4, "教育": 4, "データ統計": 3, "資格実学": 4,
         "入試形式": "一般選抜，共通テスト利用，公募制推薦，指定校推薦",
         "科目数": "一般: 3科目 / 公募: 2科目（英・国）",
-        "入試対策": "指定校推薦の枠が多い。公募推薦は高得点での争いになるため，過去問での演習が必須。"
+        "入試対策": "指定校推薦の枠が多い。公募推薦は高得点での争いになるため，過去問での演習が必須。",
+        "募集要項": {
+            "公募制推薦": "https://www.ryukoku.ac.jp/admission/nyushi/about/download.html",
+            "一般選抜": "https://www.ryukoku.ac.jp/admission/nyushi/about/download.html"
+        }
     },
 ]
 
@@ -210,9 +265,8 @@ ideal_defaults = ["京都女子大学", "立命館大学", "関西学院大学",
 valid_defaults = [u for u in ideal_defaults if u in available_univs]
 selected_univs = st.sidebar.multiselect("比較する大学を選択", available_univs, default=valid_defaults)
 
-# --- 3. グラフ描画セクション（レイアウト見直し） ---
+# --- 3. グラフ描画セクション ---
 
-# 1つ目：学費 vs 科研費規模（スマホで見やすいように単独で全幅表示）
 st.markdown("---")
 st.subheader("学費 vs 研究力（科研費規模）")
 st.markdown("ざっくりいうと，大学の「費用対効果」がわかります。")
@@ -225,7 +279,6 @@ st.info("""
 ※心理学（特に臨床系）は高額な機械を使わないため，基盤Cが多くなる傾向があります。
 """)
 
-# グラフのデザインを大幅に改善
 fig_scatter = px.scatter(
     filtered_df, x="年間学費(万円)", y="科研費規模", color="区分", text="大学名",
     hover_data=["科研費の質"],
@@ -234,21 +287,19 @@ fig_scatter = px.scatter(
 
 fig_scatter.update_traces(
     textposition='top center',
-    marker=dict(size=16, line=dict(width=1.5, color='DarkSlateGrey')), # マーカーを大きく、縁取りを追加
-    textfont=dict(size=13, color='black') # 文字を黒く、少し大きく
+    marker=dict(size=16, line=dict(width=1.5, color='DarkSlateGrey')), 
+    textfont=dict(size=13, color='black') 
 )
 
 fig_scatter.update_layout(
     height=450,
-    plot_bgcolor='rgba(245, 245, 245, 1)', # 背景を少しグレーにして視認性を上げる
+    plot_bgcolor='rgba(245, 245, 245, 1)', 
     xaxis=dict(title="年間学費（万円）", title_font=dict(size=14, weight="bold"), gridcolor='white', linecolor='black'),
     yaxis=dict(title="科研費規模（相対値）", title_font=dict(size=14, weight="bold"), gridcolor='white', linecolor='black'),
     margin=dict(l=40, r=40, t=40, b=40)
 )
 st.plotly_chart(fig_scatter, use_container_width=True)
 
-
-# 2つ目と3つ目：四軸チャートとレーダーチャート（横並び）
 st.markdown("---")
 col1, col2 = st.columns(2)
 
@@ -256,11 +307,10 @@ with col1:
     st.subheader("大学の学風（スタンス）マップ")
     st.markdown("各大学の注力分野が**「研究か実学か」「教育か臨床か」**で分かれます。")
     
-    # 選択された大学のみのデータフレームを作成
     if selected_univs:
         focus_df = df[df["大学名"].isin(selected_univs)]
     else:
-        focus_df = pd.DataFrame(columns=df.columns) # 空のDF
+        focus_df = pd.DataFrame(columns=df.columns)
 
     fig_quad = px.scatter(
         focus_df, x="X_Score", y="Y_Score", color="大学名", text="大学名",
@@ -273,11 +323,9 @@ with col1:
         textfont=dict(size=12, color='black')
     )
 
-    # 十字の基準線（ゼロライン）を追加
     fig_quad.add_hline(y=0, line_width=2, line_color="black", opacity=0.3)
     fig_quad.add_vline(x=0, line_width=2, line_color="black", opacity=0.3)
 
-    # 軸の設定と固定（四つの象限が常に正しく表示されるように）
     fig_quad.update_layout(
         height=450,
         showlegend=False,
@@ -327,32 +375,17 @@ if selected_univs:
         with cols[i]:
             univ_data = df[df["大学名"] == univ].iloc[0]
             st.markdown(f"### {univ}")
+            
+            # --- 募集要項リンクの動的生成（複数対応） ---
+            st.markdown("**募集要項・入試情報**")
+            urls = univ_data.get("募集要項", {})
+            if isinstance(urls, dict):
+                for name, url in urls.items():
+                    # 形式ごとにボタンを生成
+                    st.link_button(f"{name}の要項を見る", url, use_container_width=True)
+            elif isinstance(urls, str):
+                st.link_button("要項を見る", urls, use_container_width=True)
+            
             st.write(f"**学部学科:** {univ_data['学部学科名']}")
             
             with st.expander("入試・科目の詳細を確認", expanded=True):
-                st.write(f"**形式:** {univ_data['入試形式']}")
-                st.write(f"**科目:** {univ_data['科目数']}")
-                st.write(f"**対策:** {univ_data['入試対策']}")
-            
-            st.write(f"**立地:** {univ_data['立地']}")
-            st.write(f"**科研費評価:** {univ_data['科研費の質']}")
-            
-            # リンク生成
-            search_query = urllib.parse.quote(f"{univ} 心理")
-            kenkyu_url = f"https://research-er.jp/researchers/search?q={search_query}"
-            st.markdown(f"[日本の研究.com で分析する]({kenkyu_url})")
-            
-            # Google Map
-            map_query = urllib.parse.quote(univ_data["マップ検索"])
-            map_html = f"""
-            <iframe 
-                width="100%" 
-                height="200" 
-                frameborder="0" 
-                style="border:0; border-radius: 4px;" 
-                src="https://maps.google.com/maps?q={map_query}&t=m&z=14&output=embed">
-            </iframe>
-            """
-            components.html(map_html, height=210)
-else:
-    st.info("左側のメニューから比較したい大学を選択してください。")
