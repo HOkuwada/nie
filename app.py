@@ -439,7 +439,8 @@ def load_questions():
         df_q["選択肢"] = df_q["選択肢"].astype(str).apply(lambda x: x.split("|"))
         return df_q.to_dict('records')
     except Exception as e:
-        # ファイルが無い、またはエラーの時は空のリストを返す
+        # ▼ ここを変更！画面に赤い箱でエラーの理由を出します
+        st.error(f"【デバッグ用】読み込みエラー: {e}")
         return []
 
 # セッションに問題データベースを登録
