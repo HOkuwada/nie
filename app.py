@@ -431,7 +431,7 @@ st.markdown("---")
 st.subheader("息抜きの問題")
 
 # CSVファイルを読み込む関数
-@st.cache_data
+#@st.cache_data
 def load_questions():
     try:
         df_q = pd.read_csv("questions.csv", encoding="utf-8")
