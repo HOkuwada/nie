@@ -194,15 +194,21 @@ df = pd.DataFrame(data)
 categories = ['研究', '臨床', '教育', 'データ統計', '資格実学']
 
 # --- 2. Streamlit UI構築 ---
-st.set_page_config(page_title="関西圏 心理学大学セレクター", layout="wide")
-st.title("関西圏 心理学系大学 比較ダッシュボード")
+st.set_page_config(page_title="関西圏 心理系大学比較", layout="wide")
+st.title("関西圏の心理学系大学 比較")
 
 # サイドバー
-st.sidebar.header("絞り込み条件")
+# 1. まず設立区分を選択させる
 selected_type = st.sidebar.multiselect("設立区分", ["国立", "公立", "私立"], default=["公立", "私立"])
-selected_univs = st.sidebar.multiselect("比較する大学を選択", df["大学名"].tolist(), default=["京都女子大学", "立命館大学", "関西学院大学", "奈良女子大学"])
-
+# 2. 設立区分でデータフレームを先にフィルタリングする
 filtered_df = df[df["区分"].isin(selected_type)]
+# 3. フィルタリングされたデータフレームに存在する大学名だけをリスト化する
+available_univs = filtered_df["大学名"].tolist()
+# 4. デフォルトで選択させたい大学が、現在選べるリストに存在するかチェックして安全に設定
+ideal_defaults = ["京都女子大学", "立命館大学", "関西学院大学", "奈良女子大学"]
+valid_defaults = [u for u in ideal_defaults if u in available_univs]
+# 5. 大学選択のマルチセレクトを生成
+selected_univs = st.sidebar.multiselect("比較する大学を選択", available_univs, default=valid_defaults)
 
 # --- 3. グラフ描画セクション ---
 col1, col2 = st.columns(2)
