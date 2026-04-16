@@ -43,9 +43,19 @@ filtered_df = df[df["区分"].isin(selected_type)]
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("学費 vs 科研費規模（研究力）💰")
+    st.subheader("学費vs科研費規模")
+    st.markdown("##### ざっくりいうと、大学の「費用対効果」がわかります。")
+    st.info("""
+    **科研費（科学研究費助成事業）とは？** 国から研究者に配分される、「研究のための競争的資金」です。  
+    ざっくりと以下のような規模感に分かれています。
+    * **特別推進・基盤S / A:** 2千万〜数億円（超大型・巨大な実験設備など）
+    * **基盤B:** 5百万〜2000万円（中型・本格的な実験や調査）
+    * **基盤C・萌芽:** 〜500万円（小型・面接調査やデータ分析など）
+    
+    ※心理学（特に臨床系）は高額な機械を使わないため、基盤Cが多くなる傾向があります。
+    """)
     fig_scatter = px.scatter(
-        filtered_df, x="年間学費[万円]", y="科研費規模", color="区分", text="大学名",
+        filtered_df, x="年間学費(万円)", y="科研費規模", color="区分", text="大学名",
         size_max=60, hover_data=["科研費の質"]
     )
     fig_scatter.update_traces(textposition='top center')
