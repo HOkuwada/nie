@@ -389,3 +389,29 @@ if selected_univs:
             st.write(f"**学部学科:** {univ_data['学部学科名']}")
             
             with st.expander("入試・科目の詳細を確認", expanded=True):
+                st.write(f"**形式:** {univ_data['入試形式']}")
+                st.write(f"**科目:** {univ_data['科目数']}")
+                st.write(f"**対策:** {univ_data['入試対策']}")
+            
+            st.write(f"**立地:** {univ_data['立地']}")
+            st.write(f"**科研費評価:** {univ_data['科研費の質']}")
+            
+            # リンク生成
+            search_query = urllib.parse.quote(f"{univ} 心理")
+            kenkyu_url = f"https://research-er.jp/researchers/search?q={search_query}"
+            st.markdown(f"[日本の研究.com で分析する]({kenkyu_url})")
+            
+            # Google Map
+            map_query = urllib.parse.quote(univ_data["マップ検索"])
+            map_html = f"""
+            <iframe 
+                width="100%" 
+                height="200" 
+                frameborder="0" 
+                style="border:0; border-radius: 4px;" 
+                src="https://maps.google.com/maps?q={map_query}&t=m&z=14&output=embed">
+            </iframe>
+            """
+            components.html(map_html, height=210)
+else:
+    st.info("左側のメニューから比較したい大学を選択してください。")
