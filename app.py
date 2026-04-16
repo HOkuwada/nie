@@ -400,10 +400,6 @@ if selected_univs:
             st.write(f"**立地:** {univ_data['立地']}")
             st.write(f"**科研費評価:** {univ_data['科研費の質']}")
             
-            # リンク生成
-            search_query = urllib.parse.quote(f"{univ} 心理")
-            kenkyu_url = f"https://research-er.jp/researchers/search?q={search_query}"
-            st.markdown(f"[日本の研究.com で分析する]({kenkyu_url})")
             
             # Google Map
             map_query = urllib.parse.quote(univ_data["マップ検索"])
