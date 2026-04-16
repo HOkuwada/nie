@@ -304,7 +304,7 @@ st.markdown("---")
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("大学の学風（スタンス）マップ")
+    st.subheader("大学の学風マップ")
     st.markdown("各大学の注力分野が「研究か実学か」，「教育か臨床か」で分かれます。")
     
     if selected_univs:
@@ -337,28 +337,32 @@ with col1:
     st.plotly_chart(fig_quad, use_container_width=True)
 
 with col2:
-    st.subheader("分野別レーダーチャート")
+st.subheader("分野別レーダーチャート")
     st.markdown("具体的な5つの指標のバランスを確認できます。")
     if selected_univs:
         fig_radar = go.Figure()
+        # 視認性の高いカラーパレット
         colors = px.colors.qualitative.Safe
         
         for i, univ in enumerate(selected_univs):
             univ_data = df[df["大学名"] == univ].iloc[0]
             fig_radar.add_trace(go.Scatterpolar(
-                r=[univ_data[cat] for cat in categories],
-                theta=categories, 
-                fill='toself', 
+                r=[univ_data[cat] for cat in categories] + [univ_data[categories[0]]], # 線を閉じるために始点を末尾に追加
+                theta=categories + [categories[0]], 
+                fill=None, # 塗りつぶしをなしに設定
                 name=univ,
-                opacity=0.4,
-                line=dict(width=2)
+                line=dict(width=4) # 境界線を太くして目立たせる
             ))
             
         fig_radar.update_layout(
-            polar=dict(radialaxis=dict(visible=True, range=[0, 5], gridcolor='lightgrey')), 
+            polar=dict(
+                radialaxis=dict(visible=True, range=[0, 5], gridcolor='lightgrey'),
+                angularaxis=dict(gridcolor='lightgrey')
+            ), 
             height=450,
             colorway=colors,
-            margin=dict(l=40, r=40, t=20, b=40)
+            showlegend=True, # 凡例は必須
+            margin=dict(l=60, r=60, t=20, b=40)
         )
         st.plotly_chart(fig_radar, use_container_width=True)
     else:
