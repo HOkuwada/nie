@@ -305,7 +305,7 @@ col1, col2 = st.columns(2)
 
 with col1:
     st.subheader("大学の学風（スタンス）マップ")
-    st.markdown("各大学の注力分野が**「研究か実学か」「教育か臨床か」**で分かれます。")
+    st.markdown("各大学の注力分野が「研究か実学か」，「教育か臨床か」で分かれます。")
     
     if selected_univs:
         focus_df = df[df["大学名"].isin(selected_univs)]
