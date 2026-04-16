@@ -197,8 +197,8 @@ df = pd.DataFrame(data)
 categories = ['研究', '臨床', '教育', 'データ統計', '資格実学']
 
 # --- 2. Streamlit UI構築 ---
-st.set_page_config(page_title="関西圏 心理学大学セレクター", layout="wide")
-st.title("関西圏 心理学系大学 比較ダッシュボード")
+st.set_page_config(page_title="関西圏心理学大学比較", layout="wide")
+st.title("関西圏 心理学系大学 簡易な比較")
 
 # サイドバー
 st.sidebar.header("絞り込み条件")
