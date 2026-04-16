@@ -4,6 +4,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import urllib.parse
 import streamlit.components.v1 as components
+import random
 
 # --- 1. データセットの定義 ---
 # 「募集要項URL」を単一の文字列から、入試方式ごとの辞書（dict）に変更しました。
@@ -424,3 +425,64 @@ if selected_univs:
             components.html(map_html, height=210)
 else:
     st.info("左側のメニューから比較したい大学を選択してください。")
+
+# --- 5. 息抜き＆実力試し！ランダム一問一答セクション ---
+st.markdown("---")
+st.subheader("🎲 息抜き＆実力試し！ランダム過去問ドリル")
+
+# ※実際はここで外部のJSONやCSVを読み込むのがおすすめです。
+# 例: q_df = pd.read_csv("questions.csv")
+# 今回はデモ用のダミーデータ（4択〜6択）を用意します。
+if "question_db" not in st.session_state:
+    st.session_state.question_db = [
+        {"科目": "英語", "問題": "次の空欄に入る最も適切な語を選びなさい。\nI am looking forward to (　　) you soon.", "選択肢": ["see", "seeing", "saw", "be seen"], "正解": "seeing", "解説": "look forward to -ing で「〜するのを楽しみに待つ」という重要熟語です。toを不定詞と勘違いして原形を選ばないように注意！"},
+        {"科目": "国語", "問題": "次の四字熟語の空欄に入る漢字を選びなさい。\n「温故知（　）」", "選択肢": ["心", "新", "真", "信"], "正解": "新", "解説": "温故知新（おんこちしん）：昔の事をたずね求め（温）、そこから新しい知識・見解を導き出すこと。"},
+        {"科目": "数学", "問題": "2次方程式 x^2 - 5x + 6 = 0 の解を求めよ。", "選択肢": ["x = 1, 6", "x = -2, -3", "x = 2, 3", "x = -1, -6", "x = 2, -3", "x = -2, 3"], "正解": "x = 2, 3", "解説": "(x-2)(x-3)=0 と因数分解できるため、解は x=2, 3 となります。（センター風6択）"}
+    ]
+
+# セッションステートの初期化（現在表示中の問題と、選択した回答を保持）
+if "current_q" not in st.session_state:
+    st.session_state.current_q = random.choice(st.session_state.question_db)
+if "user_answer" not in st.session_state:
+    st.session_state.user_answer = None
+
+# 科目絞り込み＆リフレッシュボタンを横並びに配置
+col_q1, col_q2 = st.columns([1, 1])
+
+with col_q1:
+    selected_subject = st.selectbox("科目を絞る", ["すべて", "英語", "国語", "数学"])
+
+with col_q2:
+    st.write("") # ボタンの高さを合わせるための空行
+    st.write("")
+    if st.button("🔄 別の問題を引く (Refresh)", use_container_width=True):
+        # 科目が「すべて」以外ならフィルタリングしてからランダム抽出
+        if selected_subject == "すべて":
+            pool = st.session_state.question_db
+        else:
+            pool = [q for q in st.session_state.question_db if q["科目"] == selected_subject]
+        
+        if pool:
+            st.session_state.current_q = random.choice(pool)
+            st.session_state.user_answer = None # 回答状態をリセット
+        else:
+            st.warning("その科目の問題がまだありません！")
+
+# 問題の表示枠
+q = st.session_state.current_q
+st.info(f"**【{q['科目']}】**\n\n{q['問題']}")
+
+# 選択肢の表示（ラジオボタン）
+# index=None にすることで最初は何も選択されていない状態にする
+user_choice = st.radio("答えを選択してください：", q["選択肢"], index=None, key=f"radio_{q['問題']}")
+
+# 答え合わせ判定
+if user_choice:
+    if user_choice == q["正解"]:
+        st.success("⭕")
+    else:
+        st.error(f"❌ ... 正解は「{q['正解']}」")
+    
+    # 解説は正解・不正解に関わらずアコーディオンで表示
+    with st.expander("解説を読む", expanded=True):
+        st.write(q["解説"])
