@@ -280,8 +280,12 @@ st.info("""
 ※心理学（特に臨床系）は高額な機械を使わないため，基盤Cが多くなる傾向があります。
 """)
 
+# --- グラフ用に「大学」を削った略称データを作成 ---
+plot_df = filtered_df.copy()
+plot_df["略称"] = plot_df["大学名"].str.replace("大学", "")
+
 fig_scatter = px.scatter(
-    filtered_df, x="年間学費(万円)", y="科研費規模", color="区分", text="大学名",
+    plot_df, x="年間学費(万円)", y="科研費規模", color="区分", text="略称", # ここを略称に変更
     hover_data=["科研費の質"],
     color_discrete_sequence=px.colors.qualitative.Pastel
 )
@@ -309,12 +313,14 @@ with col1:
     st.markdown("各大学の注力分野が<b>研究か実学か</b>，<b>教育か臨床か</b>で分かれます。", unsafe_allow_html=True)
     
     if selected_univs:
-        focus_df = df[df["大学名"].isin(selected_univs)]
+        # ここでも略称データを作成
+        focus_df = df[df["大学名"].isin(selected_univs)].copy()
+        focus_df["略称"] = focus_df["大学名"].str.replace("大学", "")
     else:
-        focus_df = pd.DataFrame(columns=df.columns)
+        focus_df = pd.DataFrame(columns=list(df.columns) + ["略称"])
 
     fig_quad = px.scatter(
-        focus_df, x="X_Score", y="Y_Score", color="大学名", text="大学名",
+        focus_df, x="X_Score", y="Y_Score", color="略称", text="略称", # ここを略称に変更
         color_discrete_sequence=px.colors.qualitative.Safe
     )
     
@@ -347,11 +353,13 @@ with col2:
         
         for i, univ in enumerate(selected_univs):
             univ_data = df[df["大学名"] == univ].iloc[0]
+            short_name = univ.replace("大学", "") # 凡例用に「大学」を削る
+            
             fig_radar.add_trace(go.Scatterpolar(
                 r=[univ_data[cat] for cat in categories] + [univ_data[categories[0]]], # 線を閉じるために始点を末尾に追加
                 theta=categories + [categories[0]], 
                 fill=None, # 塗りつぶしをなしに設定
-                name=univ,
+                name=short_name, # 略称を凡例に設定
                 line=dict(width=4) # 境界線を太くして目立たせる
             ))
             
