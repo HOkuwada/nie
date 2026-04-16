@@ -428,70 +428,69 @@ else:
 
 # --- 5. 息抜き＆実力試し！ランダム一問一答セクション ---
 st.markdown("---")
-st.subheader("🎲 息抜き＆実力試し！ランダム過去問ドリル")
+st.subheader("息抜きの問題")
 
-# CSVファイルを読み込む（app.pyと同じフォルダに questions.csv を置いてください）
+# CSVファイルを読み込む関数
 @st.cache_data
 def load_questions():
     try:
-        # CSVを読み込み
         df_q = pd.read_csv("questions.csv", encoding="utf-8")
-        # 「選択肢」の列を "|" で分割してPythonのリストに変換する
-        df_q["選択肢"] = df_q["選択肢"].apply(lambda x: x.split("|"))
-        # データフレームを辞書のリストに変換
+        # 文字列になっている選択肢を "|" で分割してリストに変換
+        df_q["選択肢"] = df_q["選択肢"].astype(str).apply(lambda x: x.split("|"))
         return df_q.to_dict('records')
     except Exception as e:
-        st.error("問題データの読み込みに失敗しました。questions.csv が存在するか確認してください。")
+        # ファイルが無い、またはエラーの時は空のリストを返す
         return []
 
+# セッションに問題データベースを登録
 if "question_db" not in st.session_state:
     st.session_state.question_db = load_questions()
 
-# 問題が1問でも読み込めていれば以降の処理を実行
-if st.session_state.question_db:
-    # --- 以降はさっきと同じコード ---
+# ▼ 問題が1問でも存在する場合のみ、ドリルを表示する（ここでインデント！）
+if len(st.session_state.question_db) > 0:
+    
     if "current_q" not in st.session_state:
         st.session_state.current_q = random.choice(st.session_state.question_db)
     if "user_answer" not in st.session_state:
         st.session_state.user_answer = None
 
-# 科目絞り込み＆リフレッシュボタンを横並びに配置
-col_q1, col_q2 = st.columns([1, 1])
+    col_q1, col_q2 = st.columns([1, 1])
 
-with col_q1:
-    selected_subject = st.selectbox("科目を絞る", ["すべて", "英語", "国語", "数学"])
+    with col_q1:
+        selected_subject = st.selectbox("科目を絞る", ["すべて", "英語", "国語", "数学"])
 
-with col_q2:
-    st.write("") # ボタンの高さを合わせるための空行
-    st.write("")
-    if st.button("🔄 別の問題を引く", use_container_width=True):
-        # 科目が「すべて」以外ならフィルタリングしてからランダム抽出
-        if selected_subject == "すべて":
-            pool = st.session_state.question_db
+    with col_q2:
+        st.write("") 
+        st.write("")
+        if st.button("🔄 別の問題を引く", use_container_width=True):
+            if selected_subject == "すべて":
+                pool = st.session_state.question_db
+            else:
+                pool = [q for q in st.session_state.question_db if q["科目"] == selected_subject]
+            
+            if pool:
+                st.session_state.current_q = random.choice(pool)
+                st.session_state.user_answer = None 
+            else:
+                st.warning("その科目の問題がまだありません！")
+
+    # 現在の問題を取得して表示
+    q = st.session_state.current_q
+    st.info(f"**【{q['科目']}】**\n\n{q['問題']}")
+
+    # 選択肢のラジオボタン
+    user_choice = st.radio("答えを選択してください：", q["選択肢"], index=None, key=f"radio_{q['問題']}")
+
+    # 答え合わせ判定
+    if user_choice:
+        if user_choice == q["正解"]:
+            st.success("⭕！")
         else:
-            pool = [q for q in st.session_state.question_db if q["科目"] == selected_subject]
+            st.error(f"❌... 正解は「{q['正解']}」")
         
-        if pool:
-            st.session_state.current_q = random.choice(pool)
-            st.session_state.user_answer = None # 回答状態をリセット
-        else:
-            st.warning("その科目の問題がまだありません！")
+        with st.expander("解説を読む", expanded=True):
+            st.write(q["解説"])
 
-# 問題の表示枠
-q = st.session_state.current_q
-st.info(f"**【{q['科目']}】**\n\n{q['問題']}")
-
-# 選択肢の表示（ラジオボタン）
-# index=None にすることで最初は何も選択されていない状態にする
-user_choice = st.radio("答えを選択してください：", q["選択肢"], index=None, key=f"radio_{q['問題']}")
-
-# 答え合わせ判定
-if user_choice:
-    if user_choice == q["正解"]:
-        st.success("⭕")
-    else:
-        st.error(f"❌ ... 正解は「{q['正解']}」")
-    
-    # 解説は正解・不正解に関わらずアコーディオンで表示
-    with st.expander("解説を読む", expanded=True):
-        st.write(q["解説"])
+else:
+    # ▼ CSVがない、または読み込めなかった場合の安全装置
+    st.warning("現在、過去問データ（questions.csv）を準備中です。")
