@@ -99,11 +99,15 @@ if selected_univs:
         with cols[i]:
             univ_data = df[df["大学名"] == univ].iloc[0]
             st.markdown(f"### {univ}")
+            
+            # --- 【新規】入試対策情報（アコーディオン表示） ---
+            with st.expander(f" {univ} の入試科目・対策を見る", expanded=True):
+                st.write(univ_data["入試対策"])
+            
             st.write(f"**立地:** {univ_data['立地']}")
             st.write(f"**科研費の質:** {univ_data['科研費の質']}")
             
             # --- 日本の研究.com へのリンク生成 ---
-            # 「大学名 + 心理」で検索するURLを動的に生成
             search_query = urllib.parse.quote(f"{univ} 心理")
             kenkyu_url = f"https://research-er.jp/researchers/search?q={search_query}"
             st.markdown(f"🔗 **[日本の研究.com で『{univ} 心理』の科研費・研究者を調べる]({kenkyu_url})**")
