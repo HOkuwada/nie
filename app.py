@@ -430,21 +430,30 @@ else:
 st.markdown("---")
 st.subheader("🎲 息抜き＆実力試し！ランダム過去問ドリル")
 
-# ※実際はここで外部のJSONやCSVを読み込むのがおすすめです。
-# 例: q_df = pd.read_csv("questions.csv")
-# 今回はデモ用のダミーデータ（4択〜6択）を用意します。
-if "question_db" not in st.session_state:
-    st.session_state.question_db = [
-        {"科目": "英語", "問題": "次の空欄に入る最も適切な語を選びなさい。\nI am looking forward to (　　) you soon.", "選択肢": ["see", "seeing", "saw", "be seen"], "正解": "seeing", "解説": "look forward to -ing で「〜するのを楽しみに待つ」という重要熟語です。toを不定詞と勘違いして原形を選ばないように注意！"},
-        {"科目": "国語", "問題": "次の四字熟語の空欄に入る漢字を選びなさい。\n「温故知（　）」", "選択肢": ["心", "新", "真", "信"], "正解": "新", "解説": "温故知新（おんこちしん）：昔の事をたずね求め（温）、そこから新しい知識・見解を導き出すこと。"},
-        {"科目": "数学", "問題": "2次方程式 x^2 - 5x + 6 = 0 の解を求めよ。", "選択肢": ["x = 1, 6", "x = -2, -3", "x = 2, 3", "x = -1, -6", "x = 2, -3", "x = -2, 3"], "正解": "x = 2, 3", "解説": "(x-2)(x-3)=0 と因数分解できるため、解は x=2, 3 となります。（センター風6択）"}
-    ]
+# CSVファイルを読み込む（app.pyと同じフォルダに questions.csv を置いてください）
+@st.cache_data
+def load_questions():
+    try:
+        # CSVを読み込み
+        df_q = pd.read_csv("questions.csv", encoding="utf-8")
+        # 「選択肢」の列を "|" で分割してPythonのリストに変換する
+        df_q["選択肢"] = df_q["選択肢"].apply(lambda x: x.split("|"))
+        # データフレームを辞書のリストに変換
+        return df_q.to_dict('records')
+    except Exception as e:
+        st.error("問題データの読み込みに失敗しました。questions.csv が存在するか確認してください。")
+        return []
 
-# セッションステートの初期化（現在表示中の問題と、選択した回答を保持）
-if "current_q" not in st.session_state:
-    st.session_state.current_q = random.choice(st.session_state.question_db)
-if "user_answer" not in st.session_state:
-    st.session_state.user_answer = None
+if "question_db" not in st.session_state:
+    st.session_state.question_db = load_questions()
+
+# 問題が1問でも読み込めていれば以降の処理を実行
+if st.session_state.question_db:
+    # --- 以降はさっきと同じコード ---
+    if "current_q" not in st.session_state:
+        st.session_state.current_q = random.choice(st.session_state.question_db)
+    if "user_answer" not in st.session_state:
+        st.session_state.user_answer = None
 
 # 科目絞り込み＆リフレッシュボタンを横並びに配置
 col_q1, col_q2 = st.columns([1, 1])
@@ -455,7 +464,7 @@ with col_q1:
 with col_q2:
     st.write("") # ボタンの高さを合わせるための空行
     st.write("")
-    if st.button("🔄 別の問題を引く (Refresh)", use_container_width=True):
+    if st.button("🔄 別の問題を引く", use_container_width=True):
         # 科目が「すべて」以外ならフィルタリングしてからランダム抽出
         if selected_subject == "すべて":
             pool = st.session_state.question_db
